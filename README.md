@@ -32,7 +32,12 @@ can examine this with deepdish like so
 You want to create a data computation pipeline but not have to worry about infrastructure. The solution
 is to automate as much of the plumbing backend work as possible. This project was inspired by the
 likes of Facebook's fantastic [FBLearner](https://code.facebook.com/posts/1072626246134461/introducing-fblearner-flow-facebook-s-ai-backbone/)
- and my favorite, Spotify's [Luigi](https://github.com/spotify/luigi/).
+ and my favorite, Spotify's [Luigi](https://github.com/spotify/luigi/). 
+ 
+ The problem with these two work flow manager systems is that you need to specify connections in code.
+ There's no easy way to just change connections on the fly, outside of code. 
+ 
+*Changing the graph outside of code is the important feature here.*
  
 The niche Whiskey Cube will solve is to make experimenting computation as easy as possible. No longer
  do you need to worry about how the pipeline you have will work or not. So long as your code inside
