@@ -1,6 +1,6 @@
 # libdag
 
-Library to run Whiskey Cube -- data pipelines without coding.
+Library implementation of core Whiskey Cube logic -- data pipelines without coding.
 
 Computation for Deep Learning models is organized as nodes in a graph.
 Data flows between these nodes. Each node is contained in a Docker
