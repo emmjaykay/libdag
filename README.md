@@ -19,10 +19,25 @@ container if you wish, either locally or remotely.
     python3 ../dag.py -r user_api_key
     
 The last file should output an h5 file somewhere in your `/data/<api_key>/<run_uuid_number>/`. You
-can examine this with 
+can examine this with deepdish like so
+
+    ipython3
+    import deepdish as dd
+    dd.io.load('<h5file path>')
+    {'objectD': array([ 5.,  5.,  5.,  5.,  5.,  5.,  5.])}
 
     
 ### Main Feature
 
 You want to create a data computation pipeline but not have to worry about infrastructure. The solution
-is to automate as much of the plumbing backend work as possible. 
+is to automate as much of the plumbing backend work as possible. This project was inspired by the
+likes of Facebook's fantastic [FBLearner](https://code.facebook.com/posts/1072626246134461/introducing-fblearner-flow-facebook-s-ai-backbone/)
+ and my favorite, Spotify's [Luigi](https://github.com/spotify/luigi/).
+ 
+The niche Whiskey Cube will solve is to make experimenting computation as easy as possible. No longer
+ do you need to worry about how the pipeline you have will work or not. So long as your code inside
+ the node runs and is checked into a git repo somewhere, Whiskey Cube will work.
+ 
+ At worse, you will have to duplicate or fork a graph, and maybe some of the code inside of the nodes, 
+ but they will always live in their own universe.
+ 
