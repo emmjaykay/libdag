@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import uuid
 
 from node import node_factory
 from tests.test_base import BaseTest
@@ -81,6 +82,7 @@ class Dag:
         self.sorted_node_stages = sorted_node_stages
         self.job_args = job_args
         self.debug = debug
+        self.run_id = uuid.uuid4()
 
     def run(self):
         # Run the stages for each node here
@@ -103,8 +105,9 @@ def dag_factory(js, owner=None, repo=None, debug=False):
     # different
     #
     node_list = []
+    run_id = uuid.uuid4()
     for obj in js['graph']:
-        n = node_factory(js_obj=obj, owner=owner, repo=repo, debug=debug)
+        n = node_factory(js_obj=obj, owner=owner, repo=repo, debug=debug, run_id=run_id)
         node_list.append(n)
 
     node_list, node_stages = topological_sort(node_list)

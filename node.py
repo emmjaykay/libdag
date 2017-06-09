@@ -41,6 +41,7 @@ class Node:
                  outputs,
                  location="",
                  name="",
+                 run_id=None,
                  node_id=uuid.uuid4(),
                  input_node=False,
                  output_node=False,
@@ -73,6 +74,8 @@ class Node:
 
         self.debug = debug
 
+        self.run_id = run_id
+
     def name_id(self):
         return "%s-%s" % (self.name, self.id)
 
@@ -89,11 +92,14 @@ class Node:
                           owner=self.owner,
                           location=self.location,
                           package=self.repo,
-                          debug=self.debug)
+                          debug=self.debug,
+                          run_id=self.run_id,
+                          inputs=self.inputs)
 
         outputs = rr.runner()
 
         logger.info(outputs)
+        self.outputs = outputs
 
         return outputs
 
@@ -126,7 +132,7 @@ def wc_login(user=None):
     return user
 
 
-def node_factory(js_obj, owner=None, repo=None, debug=None):
+def node_factory(js_obj, owner=None, repo=None, debug=None, run_id=None):
 
     storage = js_obj.get('storage', 'flat_file')
     outputs = inputs_outputs_factory(storage)
@@ -137,6 +143,7 @@ def node_factory(js_obj, owner=None, repo=None, debug=None):
         outputs=outputs,
         location=js_obj['location'],
         name=js_obj['name'],
+        run_id=run_id,
         input_node=js_obj.get("input", True),
         output_node=js_obj.get("output", True),
         user=owner,

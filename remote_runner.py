@@ -33,7 +33,7 @@ def get_remote_runner(remote_runner=None):
 
 
 class RemoteRunnerBase(object):
-    def __init__(self, job_args=None, owner=None, location=None, package=None, debug=False):
+    def __init__(self, job_args=None, owner=None, location=None, package=None, debug=False, run_id=None, inputs=None):
         self.job_args = job_args
         self.owner = owner
         self.location = location
@@ -43,12 +43,13 @@ class RemoteRunnerBase(object):
         self.module_to_import = self.generate_module()
         self.object_to_import = self.generate_object()
         self.debug = debug
+        self.inputs = inputs
+        self.run_id = run_id
 
     def _docker_image_to_run(self):
         package = self.location.split('.')[0]
         image = "%s/%s" % (self.owner, package)
         return image
-
 
     def generate_module(self):
         module_and_package = '.'.join(self.location.split('.')[:-1])
@@ -59,7 +60,19 @@ class RemoteRunnerBase(object):
         return self.location.split('.')[-1]
 
     def _generate_cmd(self):
-        cmd = "/usr/bin/python3 /run_object.py -p %s " % self.location
+        cmd = "/usr/bin/python3 /run_object.py -p %s -u %s -r %s" % (self.location,
+                                                                     self.owner,
+                                                                     self.run_id)
+        if len(self.inputs.keys()) == 0:
+            return cmd
+
+        cmd += " -i "
+
+        for index, k in enumerate(self.inputs.keys()):
+            v = self.inputs[k]
+            cmd += v
+            if index != len(self.inputs.keys()) -1:
+                cmd += ' '
         return cmd
 
     def run(self):
@@ -148,13 +161,25 @@ class RemoteRunnerLocal(RemoteRunnerBase):
         cmd = self._generate_cmd()
 
         docker_image_to_run = self._docker_image_to_run()
-        container = client.containers.run(docker_image_to_run, cmd, environment=self.job_args, detach=True)
+
+        volumes = ['/data']
+        volumes_bindings = {'/data/': {'bind': '/data/', 'mode': 'rw'} }
+        # host_config = client.create_host_config(
+        #     binds=volumes_bindings
+        # )
+        container = client.containers.run(docker_image_to_run, cmd,
+                                          volumes=volumes_bindings,
+                                          # volumes_from=volumes,
+                                          # host_config=host_config,
+                                          environment=self.job_args, detach=True)
+
+        container.wait()
 
         outputs = container.logs()
         # Parse outputs and find the outputh path info
 
         # outputs set to a s3 bucket or where ever the outputs are set
-        return outputs
+        return outputs.decode("utf-8").rstrip("\n\r")
 
 
 class RemoteRunnerDebug(RemoteRunnerBase):
@@ -168,13 +193,15 @@ class RemoteRunnerDebug(RemoteRunnerBase):
 
 
 class RemoteRunner:
-    def __init__(self, job_args=None, owner=None, location=None, package=None, debug=False):
+    def __init__(self, job_args=None, owner=None, location=None, package=None, debug=False, run_id=None, inputs=None):
         self.job_args = job_args
         self.owner = owner
         self.location = location
         self.package = package
         self.debug = debug
         self.remote_runner = None
+        self.run_id = run_id
+        self.inputs = inputs
 
         rr = RemoteRunnerLocal
         remote_runner = job_args.get('remote_runner', 'local')
@@ -185,7 +212,9 @@ class RemoteRunner:
                                 owner=self.owner,
                                 location=self.location,
                                 package=self.package,
-                                debug=self.debug)
+                                debug=self.debug,
+                                run_id=run_id,
+                                inputs=self.inputs)
 
     def runner(self):
         return self.remote_runner.run()

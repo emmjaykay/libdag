@@ -18,5 +18,5 @@
 
 ### Docker run command
 
-    docker run mjk_api_key/my_package /usr/bin/python3 /run_object.py -o ObjectA -p my_package.my_module
+    docker run mjk_api_key/my_package /usr/bin/python3 /run_object.py -p my_package.my_module.ObjectA -u mjk_api_key -r test_run_key
     
