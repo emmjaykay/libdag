@@ -39,7 +39,7 @@ class DagTest(BaseDagTest):
         assert list(self.node_stages[2])[0].name == 'ObjectD'
 
     def test_dag_factory(self):
-        dag = dag_factory(self.js_obj, owner='customer3', repo='user1', debug=True)
+        dag = dag_factory(self.js_obj, owner='mjk_api_key', debug=True)
 
         assert list(dag.sorted_node_stages[0])[0].name == 'ObjectA'
         assert list(dag.sorted_node_stages[1])[0].name == 'ObjectC' or \
@@ -54,7 +54,7 @@ class DagTest(BaseDagTest):
 
         for k in cache:
             v = cache[k]
-            assert isinstance(v, io.BufferedRandom)
+            assert str(dag.run_id) in v
 
     def test_empty_list_dag(self):
         l = topological_sort([])

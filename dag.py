@@ -78,11 +78,11 @@ def topological_sort(node_list=None):
 
 
 class Dag:
-    def __init__(self, sorted_node_stages, job_args=None, debug=True):
+    def __init__(self, sorted_node_stages, job_args=None, debug=True, run_id=uuid.uuid4()):
         self.sorted_node_stages = sorted_node_stages
         self.job_args = job_args
         self.debug = debug
-        self.run_id = uuid.uuid4()
+        self.run_id = run_id
 
     def run(self):
         # Run the stages for each node here
@@ -114,7 +114,7 @@ def dag_factory(js, owner=None, repo=None, debug=False):
 
     job_args = js
 
-    dag = Dag(sorted_node_stages=node_stages, job_args=job_args)
+    dag = Dag(sorted_node_stages=node_stages, job_args=job_args, run_id=run_id)
     return dag
 
 
