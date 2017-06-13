@@ -25,7 +25,6 @@ class AbstractBaseNode(object):
         self.experiment_run = kwargs['experiment_run']
         self.inputs = kwargs['input_file']
 
-
     def unpack(self, *args, **kwargs):
         """
         Intake a dictionary of labels-to-paths and return a dictionary of labels
@@ -93,7 +92,6 @@ class AbstractBaseNode(object):
     def _generate_save_dir_path(self):
         s = ''
         data_dir = "/data"
-        api_path = self.api_key
 
         s = os.path.join(s, data_dir)
         s = os.path.join(s, self.api_key)
