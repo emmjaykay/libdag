@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import os
 import uuid
 
 from node import node_factory
@@ -78,34 +79,53 @@ def topological_sort(node_list=None):
 
 
 class Dag:
-    def __init__(self, sorted_node_stages, job_args=None, debug=True, run_id=uuid.uuid4()):
+    def __init__(self, sorted_node_stages, job_args=None, debug=True, run_id=uuid.uuid4(), owner=None):
         self.sorted_node_stages = sorted_node_stages
         self.job_args = job_args
         self.debug = debug
         self.run_id = run_id
+        self.owner = owner
+
+        self.results_cache = self._create_load_results_cache()
+
+    def _run_dir_path(self):
+        s = '/data'
+        s = os.path.join(s, self.owner)
+        s = os.path.join(s, str(self.run_id))
+        return s
+
+    def _create_load_results_cache(self):
+        run_path = self._run_dir_path()
+        run_path_cache = os.path.join(run_path, "results.cache")
+
+        results_cache = dict()
+        if os.path.exists(run_path_cache):
+            with open(run_path_cache, 'r') as results_cache_fd:
+                results_cache = json.load(results_cache_fd)
+        return results_cache
 
     def run(self):
         # Run the stages for each node here
-        results_cache = dict()
 
         for stage in self.sorted_node_stages:
             for node in stage:
-                inputs = {x: results_cache[x] for x in node.parents}
+                inputs = {x: self.results_cache[x] for x in node.parents}
                 node.inputs = inputs
                 node.run(self.job_args)
-                results_cache[node.name_id()] = node.outputs
+                self.results_cache[node.name_id()] = node.outputs
 
-        return results_cache
+        return self.results_cache
 
 
-def dag_factory(js, owner=None, repo=None, debug=False):
+def dag_factory(js, owner=None, repo=None, debug=False, run_id=None):
     # add each node to a dictionary. We can have two of the same types of nodes
     # get called over and over again, so add them one at a time from the node
     # factory. The code will be the same but the inputs and outputs will be
     # different
     #
     node_list = []
-    run_id = uuid.uuid4()
+    if run_id is None:
+        run_id = uuid.uuid4()
     for obj in js['graph']:
         n = node_factory(js_obj=obj, owner=owner, repo=repo, debug=debug, run_id=run_id)
         node_list.append(n)
@@ -114,7 +134,7 @@ def dag_factory(js, owner=None, repo=None, debug=False):
 
     job_args = js
 
-    dag = Dag(sorted_node_stages=node_stages, job_args=job_args, run_id=run_id)
+    dag = Dag(sorted_node_stages=node_stages, job_args=job_args, run_id=run_id, owner=owner)
     return dag
 
 

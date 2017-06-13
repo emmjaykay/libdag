@@ -70,3 +70,19 @@ class DagTest(BaseDagTest):
         ]
         assert dag.job_args['vars'] == job_args
 
+    def test_dag_load_cache(self):
+        dag = dag_factory(self.js_obj, owner='test_api_key', run_id='test_run_id')
+
+        test_result_cache = {
+            "ObjectA-f51b5716-4bbb-48b1-8b63-ab5d595b20dc":
+                "/data/mjk_api_key/fbeb1539-88ce-459a-b707-b85b6b4f1922/ObjectA-3yl1qj88.h5",
+            "ObjectB-f51b5716-4bbb-48b1-8b63-ab5d595b20dc":
+                "/data/mjk_api_key/fbeb1539-88ce-459a-b707-b85b6b4f1922/ObjectB-z4kfrkdr.h5"
+        }
+
+        self.assertFalse(dag.results_cache == {})
+
+        self.assertTrue(test_result_cache == dag.results_cache)
+
+
+
